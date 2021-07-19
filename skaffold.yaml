@@ -1,0 +1,23 @@
+apiVersion: skaffold/v2beta19
+kind: Config
+build:
+  tagPolicy:
+    sha256: {}
+  artifacts:
+    - image: adalekin/otusk8s3
+      docker:
+        dockerfile: build/docker/Dockerfile
+deploy:
+  helm:
+    releases:
+      - name: otusk8s3
+        chartPath: deployments/helm
+        artifactOverrides:
+          imageKey: adalekin/otusk8s3
+        imageStrategy:
+          fqn: {}
+        valuesFiles:
+          - examples/helm/values.dev.yaml
+          - examples/helm/secrets.dev.yaml
+        useHelmSecrets: true
+        wait: true
