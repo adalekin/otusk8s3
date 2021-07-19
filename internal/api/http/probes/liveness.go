@@ -7,7 +7,7 @@ import (
 	"github.com/adalekin/otusk8s3/internal/appenv"
 )
 
-func LivenessHandler(appEnv appenv.AppEnv, w http.ResponseWriter, _ *http.Request) {
+func LivenessHandler(w http.ResponseWriter, _ *http.Request, appEnv appenv.AppEnv) {
 	status := common.Error{
 		Code: "OK",
 	}

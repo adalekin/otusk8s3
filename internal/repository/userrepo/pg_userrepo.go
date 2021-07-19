@@ -8,20 +8,20 @@ import (
 )
 
 type pgRepository struct {
-	db dbexecutor.DBExecutor
+	db dbexecutor.IDBExecutor
 }
 
-func NewPostgreSQL(db dbexecutor.DBExecutor) IRepository {
+func NewPostgreSQL(db dbexecutor.IDBExecutor) IRepository {
 	return pgRepository{
 		db: db,
 	}
 }
 
 func (r pgRepository) Create(ctx context.Context, req CreateRequest) (res *domain.User, err error) {
-	query := "insert into users (uuid, name) values (?, ?);"
-	res = &domain.Person{UUID: uuid.NewUUID().String(), Name: req.Name}
+	query := "INSERT INTO users (name) VALUES (?);"
+	res = &domain.User{Name: req.Name}
 
-	_, err = r.db.Exec(query, res.UUID, res.Name)
+	_, err = r.db.Exec(query, res.Name)
 
 	if err != nil {
 		return nil, err
