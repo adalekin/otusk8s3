@@ -15,7 +15,7 @@ type IRepository interface {
 
 type CreateRequest struct {
 	Name     string `json:"name"`
-	IsActive bool   `json:is_active`
+	IsActive bool   `json:"is_active"`
 }
 
 type FindByIdRequest struct {

@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/render"
 
@@ -30,7 +31,7 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	// Create a database object
-	dbConnectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s", config.DbHost, config.DbUser, config.DbPassword, config.DbName)
+	dbConnectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", config.DbHost, config.DbUser, config.DbPassword, config.DbName)
 	db, err := sql.Open("postgres", dbConnectionString)
 	if err != nil {
 		panic(err)

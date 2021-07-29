@@ -1,2 +1,2 @@
 postgresql:
-  existingSecret: postgresqlPassword
+  existingSecret: otusk8s3

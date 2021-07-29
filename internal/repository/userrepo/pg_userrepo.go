@@ -3,6 +3,8 @@ package userrepo
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/adalekin/otusk8s3/internal/dbexecutor"
 	"github.com/adalekin/otusk8s3/internal/domain"
 )
@@ -31,6 +33,23 @@ func (r pgRepository) Create(ctx context.Context, req CreateRequest) (res *domai
 }
 
 func (r pgRepository) FindAll(ctx context.Context) (res []*domain.User, err error) {
+	query := "SELECT * FROM users;"
+	rows, err := r.db.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var user domain.User
+
+		if err := rows.Scan(&user.Id, &user.Name, &user.IsActive, &user.CreatedAt, &user.UpdatedAt); err != nil {
+			log.WithError(err).Error("Failed to scan a row")
+		}
+
+		res = append(res, &user)
+	}
+
 	return
 }
 

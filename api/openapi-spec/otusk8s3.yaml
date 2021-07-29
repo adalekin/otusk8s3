@@ -6,32 +6,98 @@ servers:
   - url: 'http://arch.homework'
 paths:
   /users:
-    get:
-      summary: 'Returns details about a particular user'
-      operationId: listUser
+    post:
+      summary: 'Creates a user'
+      operationId: createUser
       tags:
         - user
-      parameters:
-        - name: id
-          in: query
-          description: ID of the user
-          required: true
-          schema:
-            type: integer
-            format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: The user to create.
+        required: true
       responses:
-        '200':
-          description: 'Details about a user by ID'
+        '201':
+          description: 'Details about a created user'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserWithID'
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    get:
+      summary: 'Returns a list of users'
+      operationId: listUser
+      tags:
+        - user
+      responses:
+        '200':
+          description: 'A list of users'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserWithID'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user/{user_id}/:
+    get:
+      tags:
+        - user
+      summary: Retrieves a user by an identifier.
+      operationId: getUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Details of user by ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithID'
+    patch:
+      tags:
+        - user
+      summary: Update a user by an identifier
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: The user to update
+        required: true
+      responses:
+        '200':
+          description: Details of updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithID'
+    delete:
+      tags:
+        - user
+      summary: Delete a user by an identifier
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '204':
+          description: Success
+
   /liveness:
     get:
       summary: 'Indicates whether the application is running.'
@@ -48,8 +114,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
+  parameters:
+    UserID:
+      in: path
+      name: user_id
+      required: true
+      description: A user identifier
+      schema:
+        type: string
+
   schemas:
     User:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    UserWithID:
       type: object
       required:
         - id

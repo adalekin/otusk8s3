@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "otusk8s3.fullname" . }}-migrations
+  labels:
+    {{- include "otusk8s3.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "otusk8s3.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["./otusk8s3-migrations"]
+          args: ["-dir", "migrations", "up"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "otusk8s3.fullname" . }}-config
+          {{- if .Values.postgresql.existingSecret }}
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otusk8s3.fullname" . }}
+                  key: postgresql-postgres-password
+          {{- else }}
+          env:
+            - name: DB_PASSWORD
+              value: {{ .Values.postgresql.postgresqlPassword }}
+          {{- end }}
+      restartPolicy: Never

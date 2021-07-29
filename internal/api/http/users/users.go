@@ -1,24 +1,30 @@
 package users
 
 import (
-	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/adalekin/otusk8s3/internal/api/http/common"
 	"github.com/adalekin/otusk8s3/internal/appenv"
 )
 
 func ListUsersHandler(w http.ResponseWriter, req *http.Request, appEnv appenv.AppEnv) {
-	status := common.Error{Code: "OK"}
+	userRepository := appEnv.RepoRegistry.GetUserRepository()
+	users, err := userRepository.FindAll(req.Context())
 
-	body, err := json.Marshal(status)
 	if err != nil {
-		log.Printf("Could not encode info data: %v", err)
-		http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+		log.WithError(err).Error("Transaction failed")
+
+		status := common.Error{
+			Code:    "ERROR",
+			Message: fmt.Sprint(err),
+		}
+
+		_ = appEnv.Render.JSON(w, http.StatusInternalServerError, status)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(body)
+	_ = appEnv.Render.JSON(w, http.StatusOK, users)
 }

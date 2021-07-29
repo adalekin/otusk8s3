@@ -94,7 +94,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: arch.homework
-      paths: ["/users"]
+      paths: ["/users", "/liveness"]
 
 ## @section Database Parameters
 
@@ -104,4 +104,3 @@ ingress:
 postgresql:
   postgresqlDatabase: otusk8s3
   postgresqlUsername: otusk8s3
-  postgresqlPassword: ""

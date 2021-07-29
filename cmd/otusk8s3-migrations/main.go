@@ -3,13 +3,17 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
-	"log"
 	"os"
+	"time"
 
+	"github.com/adalekin/otusk8s3/internal/appenv"
+	"github.com/caarlos0/env"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -22,7 +26,7 @@ var (
 )
 
 func main() {
-	flags.Parse(os.Args[1:])
+	_ = flags.Parse(os.Args[1:])
 
 	if *version {
 		fmt.Println(goose.VERSION)
@@ -41,7 +45,7 @@ func main() {
 		return
 	}
 
-	switch args[1] {
+	switch args[0] {
 	case "create":
 		if err := goose.Run("create", nil, *dir, args[2:]...); err != nil {
 			log.Fatalf("goose run: %v", err)
@@ -54,27 +58,46 @@ func main() {
 		return
 	}
 
-	if len(args) < 2 {
-		flags.Usage()
-		return
+	// Parse environment variables
+	config := appenv.Config{}
+	if err := env.Parse(&config); err != nil {
+		fmt.Printf("%+v\n", err)
 	}
 
-	dbstring, command := args[0], args[1]
+	dbConnectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", config.DbHost, config.DbUser, config.DbPassword, config.DbName)
 
-	db, err := goose.OpenDBWithDriver("postgres", dbstring)
+	command := args[0]
+
+	var db *sql.DB
+	var err error
+
+	for databaseConnectionAttemptLoop := 0; databaseConnectionAttemptLoop < 10; databaseConnectionAttemptLoop++ {
+		log.Infof("Trying to connect to DB: attempt %d", databaseConnectionAttemptLoop+1)
+
+		if db, err = goose.OpenDBWithDriver("postgres", dbConnectionString); err == nil {
+			err = db.Ping()
+
+			if err == nil {
+				break
+			}
+		}
+		time.Sleep(1 * time.Duration(databaseConnectionAttemptLoop) * time.Second)
+	}
+
 	if err != nil {
-		log.Fatalf("goose: failed to open DB: %v\n", err)
+		log.Fatalf("goose: failed to open DB: %v", err)
+		return
 	}
 
 	defer func() {
 		if err := db.Close(); err != nil {
-			log.Fatalf("goose: failed to close DB: %v\n", err)
+			log.Fatalf("goose: failed to close DB: %v", err)
 		}
 	}()
 
 	arguments := []string{}
-	if len(args) > 3 {
-		arguments = append(arguments, args[3:]...)
+	if len(args) > 2 {
+		arguments = append(arguments, args[2:]...)
 	}
 
 	if err := goose.Run(command, db, *dir, arguments...); err != nil {

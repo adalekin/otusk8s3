@@ -7,4 +7,5 @@ RUN make build-linux
 FROM scratch
 WORKDIR /root/
 COPY --from=0 /app/bin .
+COPY --from=0 /app/db .
 CMD ["./otusk8s3"]
