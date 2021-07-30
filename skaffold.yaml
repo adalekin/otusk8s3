@@ -15,9 +15,10 @@ deploy:
         artifactOverrides:
           imageKey: adalekin/otusk8s3
         imageStrategy:
-          fqn: {}
+          helm: {}
+        setValueTemplates:
+          image.tag: "{{ .DIGEST_HEX }}"
         valuesFiles:
           - examples/helm/values.dev.yaml
           - examples/helm/secrets.dev.yaml
-        useHelmSecrets: true
         wait: true

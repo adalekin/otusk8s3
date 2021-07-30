@@ -10,7 +10,7 @@ type IRepository interface {
 	Create(ctx context.Context, req CreateRequest) (res *domain.User, err error)
 	FindAll(ctx context.Context) (res []*domain.User, err error)
 	FindById(ctx context.Context, req FindByIdRequest) (res *domain.User, err error)
-	Delete(ctx context.Context, req DeleteRequest) (err error)
+	Update(ctx context.Context, req UpdateRequest) (res *domain.User, err error)
 }
 
 type CreateRequest struct {
@@ -22,6 +22,8 @@ type FindByIdRequest struct {
 	Id int64 `json:"id"`
 }
 
-type DeleteRequest struct {
-	Id int64 `json:"id"`
+type UpdateRequest struct {
+	Id       int64   `json:"id"`
+	Name     *string `json:"name,omitempty"`
+	IsActive *bool   `json:"is_active,omitempty"`
 }

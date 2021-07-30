@@ -17,12 +17,13 @@ import (
 )
 
 var (
-	flags      = flag.NewFlagSet("otusk8s3-migrations", flag.ExitOnError)
-	dir        = flags.String("dir", ".", "directory with migration files")
-	verbose    = flags.Bool("v", false, "enable verbose mode")
-	help       = flags.Bool("h", false, "print help")
-	version    = flags.Bool("version", false, "print version")
-	sequential = flags.Bool("s", false, "use sequential numbering for new migrations")
+	flags                = flag.NewFlagSet("otusk8s3-migrations", flag.ExitOnError)
+	dir                  = flags.String("dir", ".", "directory with migration files")
+	verbose              = flags.Bool("v", false, "enable verbose mode")
+	help                 = flags.Bool("h", false, "print help")
+	version              = flags.Bool("version", false, "print version")
+	sequential           = flags.Bool("s", false, "use sequential numbering for new migrations")
+	maxReconnectAttempts = flags.Int("r", 10, "number of database reconnect attempts")
 )
 
 func main() {
@@ -71,7 +72,7 @@ func main() {
 	var db *sql.DB
 	var err error
 
-	for databaseConnectionAttemptLoop := 0; databaseConnectionAttemptLoop < 10; databaseConnectionAttemptLoop++ {
+	for databaseConnectionAttemptLoop := 0; databaseConnectionAttemptLoop < *maxReconnectAttempts; databaseConnectionAttemptLoop++ {
 		log.Infof("Trying to connect to DB: attempt %d", databaseConnectionAttemptLoop+1)
 
 		if db, err = goose.OpenDBWithDriver("postgres", dbConnectionString); err == nil {
@@ -85,13 +86,13 @@ func main() {
 	}
 
 	if err != nil {
-		log.Fatalf("goose: failed to open DB: %v", err)
+		log.Fatalf("migrations: failed to open DB: %v", err)
 		return
 	}
 
 	defer func() {
 		if err := db.Close(); err != nil {
-			log.Fatalf("goose: failed to close DB: %v", err)
+			log.Fatalf("migrations: failed to close DB: %v", err)
 		}
 	}()
 
@@ -101,6 +102,6 @@ func main() {
 	}
 
 	if err := goose.Run(command, db, *dir, arguments...); err != nil {
-		log.Fatalf("goose %v: %v", command, err)
+		log.Fatalf("migrations %v: %v", command, err)
 	}
 }

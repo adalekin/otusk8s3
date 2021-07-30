@@ -5,9 +5,6 @@
 ```
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
-brew install sops
-helm plugin install https://github.com/zendesk/helm-secrets
-
 helm install otusk8s3 deployments/helm
 ```
 
@@ -17,8 +14,6 @@ helm install otusk8s3 deployments/helm
 * Kubernetes 1.19.7 or later
     * NGINX Ingress Controller 0.45.0 or later
 * Helm 3.4.1 or later
-    * helm-secrets 2.0.3 or later
-        * Mozilla SOPS 3.7.1 or later
 
 
 ## Installing the Helm chart
